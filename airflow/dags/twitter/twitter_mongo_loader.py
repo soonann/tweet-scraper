@@ -1,17 +1,18 @@
 '''
 
-Name: PUT YOUR FULL NAME HERE
-Email: PUT YOUR SMU EMAIL ADDRESS HERE
+Name: TAN SOON ANN
+Email: soonann.tan.2021@scis.smu.edu.sg
 
 '''
 
-import datetime
-import os
-from pymongo import MongoClient
-import json
-import pymongo
+# import datetime
+# import os
+# from pymongo import MongoClient
+# import json
+# import pymongo
 
 def run_mongo_loader():
+    print('helloworld')
 
     # COMPLETE THIS PART
 
