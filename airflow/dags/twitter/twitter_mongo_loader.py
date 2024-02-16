@@ -11,8 +11,8 @@ Email: soonann.tan.2021@scis.smu.edu.sg
 # import json
 # import pymongo
 
-def run_mongo_loader():
-    print('helloworld')
+def run_mongo_loader(**kwargs):
+    print('hello from mongo loader')
 
     # COMPLETE THIS PART
 

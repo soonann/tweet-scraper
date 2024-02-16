@@ -12,8 +12,7 @@ Email: soonann.tan.2021@scis.smu.edu.sg
 # from datetime import datetime
 
 def run_etl(**kwargs):
-    print('hello world')
-    print('kwargs')
+    print('hello from twitter collector')
 
     # topic.txt file
     #    contains the topic (e.g. earthquake)
