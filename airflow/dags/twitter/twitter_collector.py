@@ -5,34 +5,45 @@ Email: soonann.tan.2021@scis.smu.edu.sg
 
 '''
 
-# import tweepy
-# import json
-# import requests
-# import pandas as pd
-# from datetime import datetime
+from tweety import Twitter
+from airflow.models import Variable
+import json
 
 def run_etl(**kwargs):
-    print('hello from twitter collector')
+    
+    username = Variable.get("username")
+    password = Variable.get("password")
+    topic_file = Variable.get("topic_file")
+    output_dir = Variable.get("scrape_output_dir")
+    pages = Variable.get("pages")
 
-    # topic.txt file
-    #    contains the topic (e.g. earthquake)
-    #    for which your script will need to retrieve relevant tweets
-    #    via Twitter API
-    #
-    # You can just retrieve the most recent 100 tweets for this assignment
+    # create a twitter session and login to twitter
+    app = Twitter("session")
+    app.sign_in(username, password)
 
-    # Get the topic from topic.txt
+    # read the topic file
+    with open(topic_file, 'r') as topic_file:
 
+        # iterate each topic and scrape for tweets
+        for topic in topic_file:
 
-    # COMPLETE THIS PART
-    # Interact with Twitter API
-    # You need to retrieve (minimally)
-    #    Tweet ID (e.g. 1623735160020541442)
-    #    Tweet Text
+            topic = topic.strip("\n")
+            tweets = []
+            print(f"topic {topic}: getting {topic} topic")
 
+            # get the tweets related to the topic and append them to main list
+            search_obj = app.search(topic, pages=pages, wait_time=2)
+            for tweet in search_obj:
+                print(tweet)
+                tweets.append(tweet)
 
-    # Save tweets to a JSON file
-    # e.g. earthquake.json
+            # save all the tweets in main list to a json file named {topic}.json
+            with open(f'{output_dir}/{topic}.json', 'w') as f:
+                json.dump(
+                    tweets,
+                    f,
+                    indent=4,
+                    sort_keys=True,
+                    default=str
+                )
 
-    # Please verify that your Python script works by running it stand-alone (not as part of DAG)
-    # You can use Jupyter Notebook for this.

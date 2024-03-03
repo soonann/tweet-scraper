@@ -68,8 +68,17 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-  volumes:
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-} tweety-ns pymongo
+    AIRFLOW_VAR_USERNAME: ${AIRFLOW_VAR_USERNAME}
+    AIRFLOW_VAR_PASSWORD: ${AIRFLOW_VAR_PASSWORD}
+    AIRFLOW_VAR_TOPIC_FILE: ${AIRFLOW_VAR_TOPIC_FILE}
+    AIRFLOW_VAR_SCRAPE_OUTPUT_DIR: ${AIRFLOW_VAR_SCRAPE_OUTPUT_DIR}
+    AIRFLOW_VAR_PAGES: ${AIRFLOW_VAR_PAGES}
+    AIRFLOW_VAR_MONGO_USERNAME: ${AIRFLOW_VAR_MONGO_USERNAME}
+    AIRFLOW_VAR_MONGO_PASSWORD: ${AIRFLOW_VAR_MONGO_PASSWORD}
+    AIRFLOW_VAR_MONGO_DB_NAME: ${AIRFLOW_VAR_MONGO_DB_NAME}
+
+  volumes: 
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
@@ -257,27 +266,14 @@ services:
       - -c
       - airflow
 
-  # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
-  # or by explicitly targeted on the command line e.g. docker-compose up flower.
-  # See: https://docs.docker.com/compose/profiles/
-  flower:
-    <<: *airflow-common
-    command: celery flower
-    profiles:
-      - flower
-    ports:
-      - "5555:5555"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+  mongo:
+    image: mongo
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    ports:
+      - 27017:27017
 
 volumes:
   postgres-db-volume:

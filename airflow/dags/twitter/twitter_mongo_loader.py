@@ -5,49 +5,67 @@ Email: soonann.tan.2021@scis.smu.edu.sg
 
 '''
 
-# import datetime
-# import os
-# from pymongo import MongoClient
-# import json
-# import pymongo
+import json
+import os
+from pymongo import MongoClient, errors
+from airflow.models import Variable
+
 
 def run_mongo_loader(**kwargs):
-    print('hello from mongo loader')
 
-    # COMPLETE THIS PART
+    # output dir of the scraped tweets
+    dir = '/opt/airflow/dags/twitter/output'
 
-    # Refer to the OVERVIEW diagram
+    username = Variable.get("mongo_username")
+    password = Variable.get("mongo_password")
+    db_name = Variable.get("mongo_db_name")
 
-    # This script must retrieve the tweets info from a JSON file (e.g. earthquake.json)
-    # and insert each tweet as a DOCUMENT into MongoDB
+    # for each file in the dir
+    for topic_filename in os.listdir(dir):
+        succ = 0
+        fail = 0
 
+        # if the file sub item is a json file
+        topic_filepath = os.path.join(dir, topic_filename)
+        if os.path.isfile(topic_filepath) and ".json" in topic_filepath:
 
-    # For example:
-    # Given a tweet with:
-    #    ID: 1623735160020541442
-    #    Text: #Donation #Unicef #TurkeyEarthquake Donate blankets and clothing
-    #
-    # Create a DOCUMENT that looks like this:
-    #    {
-    #        "tweet_id": "1623735160020541442",
-    #        "tweet_text": "#Donation #Unicef #TurkeyEarthquake Donate blankets and clothing"
-    #    }
-    #
-    # IMPORTANT
-    #    No duplicates allowed in MongoDB collection.
-    #    2 or more documents with the same tweet_id (e.g. 1623735160020541442) will NOT be allowed.
-    
+            # load the json file as an object
+            with open(topic_filepath, 'r') as f:
+                topics = json.load(f)
+                topic_name = topic_filename[:-5]
 
-    # Next, your script must insert each such DOCUMENT into MongoDB
-    #    It is up to you how you name your Database, e.g. twitter
-    #    Collection name must match the topic, e.g. earthquake
+                # connect to mongo
+                client = MongoClient(f'mongodb://{username}:{password}@mongo:27017/')
+                db = client[db_name]
+                collection = db[topic_name]
+                collection.create_index([("tweet_id", 1)], unique=True)
+                for tweet in topics:
+                    # check if there is a valid id and text field
+                    if tweet["id"] and tweet["text"]:
+                        doc = {
+                            "tweet_id": tweet["id"],
+                            "tweet_text": tweet["text"]
+                        }
 
+                        # handle duplicate key errors
+                        try:
+                            result = collection.insert_one(doc)
+                        except errors.DuplicateKeyError:
+                            fail += 1
+                            continue
 
-    # Lastly, once all tweets are inserted into MongoDB as DOCUMENTS
-    #    Delete/remove the input JSON file from the file system (e.g. earthquake.json)
-    
-    
-    # Please verify that your Python script works by running it stand-alone (not as part of DAG)
-    # In this case, you should go into MongoDB shell and
-    # see if Database "twitter" --> Collection "earthquake" is populated with data.
-    # You can use Jupyter Notebook for this.
+                        # Check if the operation was successful
+                        if result.acknowledged:
+                            succ += 1
+                        else:
+                            fail += 1
+
+        print(f"topic: {topic_name}, total successful inserts: {succ}")
+        print(f"topic: {topic_name}, total failed inserts: {fail}")
+
+        # delete the file
+        try:
+            os.remove(topic_filepath)
+            print("File deleted successfully.")
+        except OSError as e:
+            print(f"Error: {e.filename} - {e.strerror}")
