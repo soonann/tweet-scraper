@@ -19,3 +19,4 @@
       devShells.${system}.default = fhs.env;
     };
 }
+
