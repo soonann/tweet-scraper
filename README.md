@@ -4,6 +4,22 @@ You will need the following dependencies to run the project:
 - Docker Compose
 
 ## Installation
+Make a copy of the `.env.example` file and set your Twitter account credentials:
+```sh
+# make a .env file
+cp .env.example .env
+
+# change the following to your username/password for twitter
+vim .env
+# vim:
+# ...
+# AIRFLOW_VAR_USERNAME="_soonann"
+# AIRFLOW_VAR_PASSWORD="mysupersecretpassword"
+# ...
+```
+
+
+
 To start, simply run the compose file with
 ```sh
 docker compose up
