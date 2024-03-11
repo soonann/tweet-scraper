@@ -32,7 +32,7 @@ You will need to change the permissions of the folder to your user:
 sudo chown soonann -R airflow
 ```
 
-Note that the DAGs are placed in the `airflow/dags` directory
+Note that the DAGs are placed in the `airflow/dags` directory.
 Should you need to edit it, feel free to change anything there
 ```sh
 vim airflow/dags
